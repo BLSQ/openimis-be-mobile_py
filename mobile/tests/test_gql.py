@@ -1,13 +1,13 @@
 import os
 
-from django.db import connection
 from django.test import TestCase
 
 import graphene
 from graphene.test import Client
 
-from controls.models import Control
-from controls.schema import Query
+from mobile.models import Control
+from mobile.schema import Query
+
 
 class ModelsTestCase(TestCase):
   DEFAULT_NAME = 'a_field'

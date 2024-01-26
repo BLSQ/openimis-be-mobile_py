@@ -1,6 +1,6 @@
-# openIMIS Backend controls reference module
+# openIMIS Backend Mobile reference module
 
-This repository holds the files of the OpenIMIS Backend Controls reference module.
+This repository holds the files of the OpenIMIS Backend Mobile reference module.
 It is dedicated to be deployed as a module of [openimis-be_py](https://github.com/openimis/openimis-be_py).
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
@@ -44,7 +44,7 @@ database), install the controls module in it `pip install -e <path to the
 controls module>`, then you can run the tests:
 
 ```bash
-python manage.py test --keep controls
+python manage.py test --keep mobile
 ```
 
 

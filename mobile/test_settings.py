@@ -1,4 +1,4 @@
 DATABASES = {}
 DATABASES['default'] = {'ENGINE': 'django.db.backends.sqlite3'}
 USE_TZ = False
-INSTALLED_APPS = ['controls']
+INSTALLED_APPS = ['mobile']

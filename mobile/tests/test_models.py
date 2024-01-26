@@ -1,10 +1,9 @@
-from django.db import connection
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 
-from controls.models import Control
+from mobile.models import Control
 
-# Create your tests here.
+
 class ModelsTestCase(TestCase):
   DEFAULT_NAME = 'a_field'
   DEFAULT_ADJUSTABILITY = Control.Adjustability.OPTIONAL
