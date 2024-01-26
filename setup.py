@@ -23,12 +23,12 @@ install_requires = read_requirements('requirements.txt')
 dev_requires = read_requirements('requirements-dev.txt')
 
 setup(
-    name='openimis-be-controls',
+    name='openimis-be-mobile',
     version='1.0.0',
     packages=find_packages(),
     include_package_data=True,
     license='GNU AGPL v3',
-    description='The openIMIS Backend controls reference module.',
+    description='The openIMIS Backend mobile reference module.',
     long_description=README,
     long_description_content_type='text/markdown',
     url='https://openimis.org/',

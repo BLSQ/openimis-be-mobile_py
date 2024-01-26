@@ -6,6 +6,7 @@ from graphene_django import DjangoObjectType
 from graphene_django.filter import DjangoFilterConnectionField
 from .models import Control
 
+
 class ControlGQLType(DjangoObjectType):
     class Meta:
         model = Control
@@ -17,11 +18,12 @@ class ControlGQLType(DjangoObjectType):
         }
         connection_class = ExtendedConnection
 
+
 class Query(graphene.ObjectType):
     control = DjangoFilterConnectionField(ControlGQLType)
     control_str = DjangoFilterConnectionField(
         ControlGQLType,
-        str = graphene.String()
+        str=graphene.String()
     )
 
     def resolve_control_str(self, info, **kwargs):

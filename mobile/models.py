@@ -1,8 +1,6 @@
-from django.conf import settings
 from django.db import models
-from graphql import ResolveInfo
 
-# Create your models here.
+
 class Control(models.Model):
     class Adjustability(models.TextChoices):
         OPTIONAL = 'O', 'Optional'
@@ -11,11 +9,10 @@ class Control(models.Model):
         REQUIRED = 'R', 'Required'
 
     name = models.CharField(db_column='FieldName', primary_key=True, max_length=50)
-    adjustability = models.CharField(\
-        db_column='Adjustibility', \
-        choices=Adjustability.choices, \
-        default=Adjustability.OPTIONAL, \
-        max_length=1)
+    adjustability = models.CharField(db_column='Adjustibility',
+                                     choices=Adjustability.choices,
+                                     default=Adjustability.OPTIONAL,
+                                     max_length=1)
     usage = models.CharField(db_column='Usage', max_length=200)
 
     def __str__(self):
