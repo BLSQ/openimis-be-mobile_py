@@ -2,8 +2,9 @@ import graphene
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError
 from django.db.models import Q
+from graphene import InputObjectType
 
-from contribution.gql_queries import PremiumGQLType
+from contribution.gql_mutations import PremiumBase
 from core import ExtendedConnection
 from graphene_django import DjangoObjectType
 from graphene_django.filter import DjangoFilterConnectionField
@@ -26,16 +27,25 @@ class ControlGQLType(DjangoObjectType):
         connection_class = ExtendedConnection
 
 
-class PolicyEnrollmentGQLType(PolicyInputType):
-    premiums = graphene.List(PremiumGQLType)
+class PremiumEnrollmentGQLType(PremiumBase, InputObjectType):
+    pass
 
 
-class FamilyEnrollmentGQLType(FamilyBase):
-    insurees = graphene.List(InsureeBase)
+class PolicyEnrollmentGQLType(PolicyInputType, InputObjectType):
+    pass
+
+
+class InsureeEnrollmentGQLType(InsureeBase, InputObjectType):
+    pass
+
+
+class FamilyEnrollmentGQLType(FamilyBase, InputObjectType):
+    insurees = graphene.List(InsureeEnrollmentGQLType)
     policies = graphene.List(PolicyEnrollmentGQLType)
+    premiums = graphene.List(PremiumEnrollmentGQLType)
 
 
-class EnrollmentGQLType(OpenIMISMutation.Input):
+class EnrollmentGQLType:
     family_enrollment = graphene.Field(FamilyEnrollmentGQLType, required=True)
 
 
