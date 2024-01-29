@@ -1,86 +1,10 @@
-import graphene
-from django.contrib.auth.models import AnonymousUser
-from django.core.exceptions import ValidationError
 from django.db.models import Q
-from graphene import InputObjectType
 
-from contribution.gql_mutations import PremiumBase
-from core import ExtendedConnection
-from graphene_django import DjangoObjectType
 from graphene_django.filter import DjangoFilterConnectionField
 
-from core.schema import OpenIMISMutation
-from insuree.gql_mutations import FamilyBase, InsureeBase
-from policy.gql_mutations import PolicyInputType
-from .models import Control
-
-
-class ControlGQLType(DjangoObjectType):
-    class Meta:
-        model = Control
-        interfaces = (graphene.relay.Node,)
-        filter_fields = {
-            'name': ['exact', 'icontains', 'istartswith'],
-            'adjustability': ['exact', 'icontains', 'istartswith'],
-            'usage': ['exact', 'icontains', 'istartswith'],
-        }
-        connection_class = ExtendedConnection
-
-
-class PremiumEnrollmentGQLType(PremiumBase, InputObjectType):
-    pass
-
-
-class PolicyEnrollmentGQLType(PolicyInputType, InputObjectType):
-    pass
-
-
-class InsureeEnrollmentGQLType(InsureeBase, InputObjectType):
-    pass
-
-
-class FamilyEnrollmentGQLType(FamilyBase, InputObjectType):
-    insurees = graphene.List(InsureeEnrollmentGQLType)
-    policies = graphene.List(PolicyEnrollmentGQLType)
-    premiums = graphene.List(PremiumEnrollmentGQLType)
-
-
-class EnrollmentGQLType:
-    family_enrollment = graphene.Field(FamilyEnrollmentGQLType, required=True)
-
-
-class MobileEnrollmentMutation(OpenIMISMutation):
-    _mutation_module = "mobile"
-    _mutation_class = "MobileEnrollmentMutation"
-
-    class Input(EnrollmentGQLType, OpenIMISMutation.Input):
-        pass
-
-    @classmethod
-    def async_mutate(cls, user, **data):
-        try:
-            if type(user) is AnonymousUser or not user.id:
-                raise ValidationError("mutation.authentication_required")
-            # TODO
-            # if not user.has_perms(CoreConfig.gql_mutation_create_roles_perms):
-            #     raise PermissionDenied("unauthorized")
-            # if check_role_unique_name(data.get('name', None)):
-            #     raise ValidationError("mutation.duplicate_of_role_name")
-            from core.utils import TimeUtils
-            data['validity_from'] = TimeUtils.now()
-            data['audit_user_id'] = user.id_for_audit
-            # TODO enrollment(data, user)
-            return None
-        except Exception as exc:
-            return [
-                {
-                    'message': "core.mutation.failed_to_enroll",
-                    'detail': str(exc)
-                }]
-
-
-class Mutation(graphene.ObjectType):
-    enrollment = MobileEnrollmentMutation.Field()
+# We do need all queries and mutations in the namespace here.
+from .gql_queries import *  # lgtm [py/polluting-import]
+from .gql_mutations import *  # lgtm [py/polluting-import]
 
 
 class Query(graphene.ObjectType):
