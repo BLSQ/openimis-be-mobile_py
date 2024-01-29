@@ -2,7 +2,7 @@ import logging
 
 import graphene
 from django.contrib.auth.models import AnonymousUser
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, PermissionDenied
 from django.db import transaction
 from graphene import InputObjectType
 
@@ -13,6 +13,7 @@ from insuree.gql_mutations import FamilyBase, InsureeBase
 from insuree.services import FamilyService, InsureeService
 from policy.gql_mutations import PolicyInputType
 from policy.services import PolicyService
+from mobile.apps import MobileConfig
 
 
 logger = logging.getLogger(__name__)
@@ -41,6 +42,19 @@ class MobileEnrollmentGQLType:
     premiums = graphene.List(PremiumEnrollmentGQLType, required=True)
 
 
+
+MOBILE_ENROLLMENT_RIGHTS = [
+    MobileConfig.gql_mutation_create_families_perms,
+    MobileConfig.gql_mutation_update_families_perms,
+    MobileConfig.gql_mutation_create_insurees_perms,
+    MobileConfig.gql_mutation_update_insurees_perms,
+    MobileConfig.gql_mutation_create_policies_perms,
+    MobileConfig.gql_mutation_edit_policies_perms,
+    MobileConfig.gql_mutation_create_premiums_perms,
+    MobileConfig.gql_mutation_update_premiums_perms,
+]
+
+
 class MobileEnrollmentMutation(OpenIMISMutation):
     _mutation_module = "mobile"
     _mutation_class = "MobileEnrollmentMutation"
@@ -54,10 +68,10 @@ class MobileEnrollmentMutation(OpenIMISMutation):
         try:
             if type(user) is AnonymousUser or not user.id:
                 raise ValidationError("mutation.authentication_required")
-            # TODO
-            # if not user.has_perms(CoreConfig.gql_mutation_create_roles_perms):
-            #     raise PermissionDenied("unauthorized")
-            with transaction.atomic():  # either everything succeeds, either everything fails
+            if not user.has_perms(MOBILE_ENROLLMENT_RIGHTS):
+                raise PermissionDenied("unauthorized")
+
+            with transaction.atomic():  # either everything succeeds, or everything fails
                 from core.utils import TimeUtils
                 now = TimeUtils.now()
                 family_data = data["family"]
