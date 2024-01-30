@@ -68,7 +68,7 @@ class MobileEnrollmentMutation(OpenIMISMutation):
         try:
             if type(user) is AnonymousUser or not user.id:
                 raise ValidationError("mutation.authentication_required")
-            if not user.has_perms(MOBILE_ENROLLMENT_RIGHTS):
+            if any(not user.has_perms(right) for right in MOBILE_ENROLLMENT_RIGHTS):
                 raise PermissionDenied("unauthorized")
 
             with transaction.atomic():  # either everything succeeds, or everything fails
