@@ -75,10 +75,11 @@ class MobileEnrollmentMutation(OpenIMISMutation):
                 from core.utils import TimeUtils
                 now = TimeUtils.now()
                 # Cleaning up None values received from the mobile app
-                family_data = delete_none(data["family"])
-                insuree_data = delete_none(data["insurees"])
-                policy_data = delete_none(data["policies"])
-                premium_data = delete_none(data["premiums"])
+                cleaned_data = delete_none(data)
+                family_data = cleaned_data["family"]
+                insuree_data = cleaned_data["insurees"]
+                policy_data = cleaned_data["policies"]
+                premium_data = cleaned_data["premiums"]
 
                 # 1 - Creating/Updating the family with the head insuree
                 logger.info(f"Creating/Updating the family with head insuree {family_data['head_insuree']['chf_id']}")
