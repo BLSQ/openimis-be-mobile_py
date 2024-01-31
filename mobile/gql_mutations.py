@@ -74,10 +74,11 @@ class MobileEnrollmentMutation(OpenIMISMutation):
             with transaction.atomic():  # either everything succeeds, or everything fails
                 from core.utils import TimeUtils
                 now = TimeUtils.now()
-                family_data = data["family"]
-                insuree_data = data["insurees"]
-                policy_data = data["policies"]
-                premium_data = data["premiums"]
+                # Cleaning up None values received from the mobile app
+                family_data = delete_none(data["family"])
+                insuree_data = delete_none(data["insurees"])
+                policy_data = delete_none(data["policies"])
+                premium_data = delete_none(data["premiums"])
 
                 # 1 - Creating/Updating the family with the head insuree
                 logger.info(f"Creating/Updating the family with head insuree {family_data['head_insuree']['chf_id']}")
@@ -122,6 +123,23 @@ class MobileEnrollmentMutation(OpenIMISMutation):
 def add_audit_values(data: dict, user_id: int, now):
     data["validity_from"] = now
     data["audit_user_id"] = user_id
+
+
+# Somehow, the library used for preparing GQL queries and sending data is not able to remove fields that have a null value
+# Since the current GQL/Graphene/... version does not support null values, everything is built thinking we won't have null values, and here, we do
+# It breaks things (imagine having a UUID=None) so we need to clean data before sending it to the various services
+# Function taken from https://stackoverflow.com/a/66127889
+def delete_none(_dict):
+    for key, value in list(_dict.items()):
+        if isinstance(value, dict):
+            delete_none(value)
+        elif value is None:
+            del _dict[key]
+        elif isinstance(value, list):
+            for v_i in value:
+                if isinstance(v_i, dict):
+                    delete_none(v_i)
+    return _dict
 
 
 class Mutation(graphene.ObjectType):
