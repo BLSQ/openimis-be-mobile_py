@@ -85,6 +85,7 @@ class MobileEnrollmentMutation(OpenIMISMutation):
 
                 # 1 - Creating/Updating the family with the head insuree
                 logger.info(f"Creating/Updating the family with head insuree {family_data['head_insuree']['chf_id']}")
+                family_data.pop("id")
                 add_audit_values(family_data, user.id_for_audit, now)
                 family = FamilyService(user).create_or_update(family_data)
 
