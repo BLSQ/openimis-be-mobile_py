@@ -116,6 +116,7 @@ class MobileEnrollmentMutation(OpenIMISMutation):
                     add_audit_values(current_premium_data, user.id_for_audit, now)
                     mobile_policy_id = current_premium_data.pop("policy_id")
                     current_premium_data["policy_uuid"] = policy_ids_mapping[mobile_policy_id]
+                    current_premium_data["is_offline"] = False
                     update_or_create_premium(current_premium_data, user)  # There is no PremiumService, so we're using directly the function in the gql_mutations file
 
                 logger.info(f"Mobile enrollment processed successfully!")
