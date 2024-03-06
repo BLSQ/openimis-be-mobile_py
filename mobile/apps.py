@@ -9,6 +9,7 @@ DEFAULT_CFG = {
     "gql_mutation_update_insurees_perms": ["101103"],
     "gql_mutation_create_policies_perms": ['101202'],
     "gql_mutation_edit_policies_perms": ['101203'],
+    "gql_mutation_renew_policies_perms": ["101205"],
     "gql_mutation_create_premiums_perms": ["101302"],
     "gql_mutation_update_premiums_perms": ["101303"],
 }
@@ -24,6 +25,7 @@ class MobileConfig(AppConfig):
     gql_mutation_update_insurees_perms = []
     gql_mutation_create_policies_perms = []
     gql_mutation_edit_policies_perms = []
+    gql_mutation_renew_policies_perms = []
     gql_mutation_create_premiums_perms = []
     gql_mutation_update_premiums_perms = []
 
@@ -34,6 +36,7 @@ class MobileConfig(AppConfig):
         MobileConfig.gql_mutation_update_insurees_perms = cfg["gql_mutation_update_insurees_perms"]
         MobileConfig.gql_mutation_create_policies_perms = cfg["gql_mutation_create_policies_perms"]
         MobileConfig.gql_mutation_edit_policies_perms = cfg["gql_mutation_edit_policies_perms"]
+        MobileConfig.gql_mutation_renew_policies_perms = cfg["gql_mutation_renew_policies_perms"]
         MobileConfig.gql_mutation_create_premiums_perms = cfg["gql_mutation_create_premiums_perms"]
         MobileConfig.gql_mutation_update_premiums_perms = cfg["gql_mutation_update_premiums_perms"]
 
