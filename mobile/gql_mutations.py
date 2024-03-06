@@ -19,6 +19,7 @@ from policy.services import PolicyService, process_create_renew_or_update_policy
 from mobile.apps import MobileConfig
 from policy.values import policy_values
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -104,10 +105,12 @@ class MobileEnrollmentMutation(OpenIMISMutation):
                     mobile_id = current_policy_data.pop("mobile_id")  # Removing the mobile internal ID
                     add_audit_values(current_policy_data, user.id_for_audit, now)
                     current_policy_data["family_id"] = family.id
+                    
                     if "uuid" not in current_policy_data:
                         # It means it's a creation. These fields are added by the CreatePolicyMutation before calling the service
                         current_policy_data["status"] = Policy.STATUS_IDLE
                         current_policy_data["stage"] = Policy.STAGE_NEW
+
                     policy = PolicyService(user).update_or_create(current_policy_data, user)
                     policy_ids_mapping[mobile_id] = policy.uuid  # Storing the backend UUID
 
