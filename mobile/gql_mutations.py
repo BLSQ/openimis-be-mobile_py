@@ -11,6 +11,7 @@ from contribution.gql_mutations import PremiumBase, update_or_create_premium
 from core.schema import OpenIMISMutation
 from insuree.gql_mutations import FamilyBase, InsureeBase
 from insuree.services import FamilyService, InsureeService
+from mobile.models import MobileEnrollmentMutation
 from payer.models import Payer
 from policy.gql_mutations import PolicyInputType, CreateRenewOrUpdatePolicyMutation
 from policy.gql_queries import PolicyGQLType
@@ -84,6 +85,7 @@ class MobileEnrollmentMutation(OpenIMISMutation):
                 insuree_data = cleaned_data["insurees"]
                 policy_data = cleaned_data["policies"]
                 premium_data = cleaned_data["premiums"]
+                client_mutation_id = cleaned_data["client_mutation_id"]
 
                 # 1 - Creating/Updating the family with the head insuree
                 logger.info(f"Creating/Updating the family with head insuree {family_data['head_insuree']['chf_id']}")
@@ -123,6 +125,7 @@ class MobileEnrollmentMutation(OpenIMISMutation):
                     current_premium_data["is_offline"] = False
                     update_or_create_premium(current_premium_data, user)  # There is no PremiumService, so we're using directly the function in the gql_mutations file
 
+                MobileEnrollmentMutation.object_mutated(user, client_mutation_id=client_mutation_id, policy=policy)
                 logger.info(f"Mobile enrollment processed successfully!")
                 return None
         except Exception as exc:
