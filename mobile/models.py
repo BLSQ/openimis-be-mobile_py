@@ -1,4 +1,5 @@
 from django.db import models
+from core import models as core_models
 
 
 class Control(models.Model):
@@ -33,3 +34,12 @@ class Control(models.Model):
     class Meta:
         managed = False
         db_table = 'tblControls'
+
+
+class MobileEnrollmentMutation(core_models.UUIDModel, core_models.ObjectMutation):
+    policy = models.ForeignKey("policy.Policy", models.DO_NOTHING, related_name='mobile_enrollment_mutations')
+    mutation = models.ForeignKey("core.MutationLog", models.DO_NOTHING, related_name='mobile_enrollments')
+
+    class Meta:
+        managed = True
+        db_table = "mobile_MobileEnrollmentMutation"

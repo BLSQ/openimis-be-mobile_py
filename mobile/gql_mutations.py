@@ -11,6 +11,7 @@ from contribution.gql_mutations import PremiumBase, update_or_create_premium
 from core.schema import OpenIMISMutation
 from insuree.gql_mutations import FamilyBase, InsureeBase
 from insuree.services import FamilyService, InsureeService
+from mobile.models import MobileEnrollmentMutation as MobileMutationLog
 from payer.models import Payer
 from policy.gql_mutations import PolicyInputType, CreateRenewOrUpdatePolicyMutation
 from policy.gql_queries import PolicyGQLType
@@ -84,6 +85,7 @@ class MobileEnrollmentMutation(OpenIMISMutation):
                 insuree_data = cleaned_data["insurees"]
                 policy_data = cleaned_data["policies"]
                 premium_data = cleaned_data["premiums"]
+                client_mutation_id = cleaned_data["client_mutation_id"]
 
                 # 1 - Creating/Updating the family with the head insuree
                 logger.info(f"Creating/Updating the family with head insuree {family_data['head_insuree']['chf_id']}")
@@ -123,6 +125,7 @@ class MobileEnrollmentMutation(OpenIMISMutation):
                     current_premium_data["is_offline"] = False
                     update_or_create_premium(current_premium_data, user)  # There is no PremiumService, so we're using directly the function in the gql_mutations file
 
+                MobileMutationLog.object_mutated(user, client_mutation_id=client_mutation_id, policy=policy)
                 logger.info(f"Mobile enrollment processed successfully!")
                 return None
         except Exception as exc:
@@ -177,7 +180,7 @@ MOBILE_POLICY_RENEWAL_AND_PREMIUM_RIGHTS = [
 ]
 
 
-class MobilePolicyRenewalAndPremium(CreateRenewOrUpdatePolicyMutation):
+class MobilePolicyRenewalAndPremiumMutation(CreateRenewOrUpdatePolicyMutation):
     _mutation_module = "mobile"
     _mutation_class = "MobilePolicyRenewalAndPremiumMutation"
 
@@ -194,6 +197,8 @@ class MobilePolicyRenewalAndPremium(CreateRenewOrUpdatePolicyMutation):
                     raise ValidationError("mutation.authentication_required")
                 if any(not user.has_perms(right) for right in MOBILE_POLICY_RENEWAL_AND_PREMIUM_RIGHTS):
                     raise PermissionDenied("unauthorized")
+
+                client_mutation_id = data["client_mutation_id"]
 
                 renewal_id = data["renewal_id"]
                 policy_renewal = PolicyRenewal.objects.filter(validity_to__isnull=True, id=renewal_id).first()
@@ -250,22 +255,25 @@ class MobilePolicyRenewalAndPremium(CreateRenewOrUpdatePolicyMutation):
                     logger.error("There were some error with the new policy")
                     return errors
 
-                # Now that the new policy was created, the premium can be created too
-                payer = None
-                if "payer_id" in data:
-                    payer = Payer.objects.filter(id=data["payer_id"]).first()
+                if product.lump_sum:  # if this is a paid product, then handle the payment
+                    logger.info(f"Preparing the Premium for the renewal")
+                    payer = None
+                    if "payer_id" in data:
+                        payer = Payer.objects.filter(id=data["payer_id"]).first()
 
-                premium_data = {
-                    "policy_uuid": renewed_policy.uuid,
-                    "amount": renewal_received_amount,
-                    "payer_uuid": payer.uuid if payer else None,
-                    "receipt": data["receipt"],
-                    "pay_date": data["renewal_date"],
-                    "pay_type": data["pay_type"],
-                    "is_photo_fee": False,
-                }
-                update_or_create_premium(premium_data, user)
+                    premium_data = {
+                        "policy_uuid": renewed_policy.uuid,
+                        "amount": renewal_received_amount,
+                        "payer_uuid": payer.uuid if payer else None,
+                        "receipt": data["receipt"],
+                        "pay_date": data["renewal_date"],
+                        "pay_type": data["pay_type"],
+                        "is_photo_fee": False,
+                    }
+                    update_or_create_premium(premium_data, user)
 
+                MobileMutationLog.object_mutated(user, client_mutation_id=client_mutation_id, policy=renewed_policy)
+                logger.info(f"Mobile policy renewal processed successfully!")
                 return None
         except Exception as exc:
             return [
@@ -277,4 +285,4 @@ class MobilePolicyRenewalAndPremium(CreateRenewOrUpdatePolicyMutation):
 
 class Mutation(graphene.ObjectType):
     mobile_enrollment = MobileEnrollmentMutation.Field()
-    mobile_policy_renewal_and_premium = MobilePolicyRenewalAndPremium.Field()
+    mobile_policy_renewal_and_premium = MobilePolicyRenewalAndPremiumMutation.Field()
